@@ -1,6 +1,6 @@
-const fieldsContainer = document.querySelectorAll('#fields')[0];
-const resultsContainer = document.querySelectorAll('#results')[0];
-const addNewFieldBtn = document.querySelectorAll('#addNew')[0];
+const fieldsContainer = document.querySelector('#fields');
+const resultsContainer = document.querySelector('#results');
+const addNewFieldBtn = document.querySelector('#addNew');
 const fields = [];
 
 function fieldFactory() {
