@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+		<script defer src="./dist/scripts.js"></script>
+	</head>
+	<body>
+		<div class="sounds-container">
+			<audio src="./sounds/boom.wav" id="1"></audio>
+			<audio src="./sounds/clap.wav" id="2"></audio>
+			<audio src="./sounds/hihat.wav" id="3"></audio>
+			<audio src="./sounds/kick.wav" id="4"></audio>
+			<audio src="./sounds/openhat.wav" id="5"></audio>
+			<audio src="./sounds/ride.wav" id="6"></audio>
+			<audio src="./sounds/snare.wav" id="7"></audio>
+			<audio src="./sounds/tink.wav" id="8"></audio>
+			<audio src="./sounds/tom.wav" id="9"></audio>
+		</div>
+        <div class="metronom--container">
+            <input type="number" id="bpm" value="120" /> <button id="metronom-switch">On</button>
+            <audio src="./sounds/boom.wav" id="metronom"></audio>
+        </div>
+		<div class="tracks--container"></div>
+	</body>
+</html>
