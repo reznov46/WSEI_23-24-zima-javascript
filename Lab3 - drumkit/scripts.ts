@@ -1,99 +1,131 @@
-import { isInterfaceDeclaration } from "typescript";
+class DrumKit {
+	private audioContext: AudioContext;
+	private sounds: { [key: string]: AudioBuffer };
+	private keyMap: { [key: string]: string };
 
-interface Sound {
-	id: number;
-	note: number;
-	time: EpochTimeStamp;
-}
-interface Track {
-	sounds: Sound[];
-}
+	constructor(soundsUrls: sound[]) {
+		this.audioContext = new AudioContext();
+		this.sounds = {};
+		this.keyMap = {};
 
-enum Note {
-	q = 1,
-	w = 2,
-	e = 3,
-	r = 4,
-	t = 5,
-	y = 6,
-	u = 7,
-	i = 8,
-	o = 9,
-}
-const notesKeys = Object.keys(Note);
+		this.loadSounds(soundsUrls.map((sound) => sound.url));
+		soundUrls.forEach((sound) => {
+			this.mapKeyToSound(
+				sound.key,
+				sound.url.substring(
+					sound.url.lastIndexOf('/') + 1,
+					sound.url.lastIndexOf('.')
+				)
+			);
+		});
 
-function createTracks(amount: number) {
-	const container = document.querySelector('.tracks--container');
-	for (let i = 0; i < amount; i++) {
-		const newTrack = createTrack();
-		container?.appendChild(newTrack);
+		document.addEventListener('keydown', (event) => {
+			const key = event.key.toLowerCase();
+			drumKit.playSound(key);
+		});
+	}
+
+	public async loadSounds(soundUrls: string[]): Promise<void> {
+		const bufferPromises = soundUrls.map((url) => this.loadSound(url));
+		await Promise.all(bufferPromises);
+	}
+
+	private async loadSound(url: string): Promise<void> {
+		const response = await fetch(url);
+		const arrayBuffer = await response.arrayBuffer();
+		const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+		const key = url.substring(url.lastIndexOf('/') + 1, url.lastIndexOf('.'));
+		this.sounds[key] = audioBuffer;
+	}
+
+	mapKeyToSound(key: string, soundKey: string): void {
+		this.keyMap[key] = soundKey;
+	}
+
+	public playSound(key: string, offset: number = 0): void {
+		const soundKey = this.keyMap[key];
+		if (soundKey) {
+			const source = this.audioContext.createBufferSource();
+			source.buffer = this.sounds[soundKey];
+			source.connect(this.audioContext.destination);
+			source.start(this.audioContext.currentTime + offset);
+		}
 	}
 }
 
-const keyPressHandlerFactory = (track: Track, startTime: number) => {
-	return (event: KeyboardEvent) => {
-		if (notesKeys.includes(event.key)) {
-			const newSound = {
-				id: track.sounds.length + 1,
-				note: Note[event.key as keyof typeof Note],
-				time: new Date().getTime() - startTime,
-			};
-			track.sounds.push(newSound);
-		}
-	};
-};
+type sound = { url: string; key: string };
 
-function createTrack(): any {
-	const track: Track = { sounds: [] };
+type Track = { key: string; offsetTime: number };
+class TrackRecorder {
+	private track: Track[];
+	private startTime!: number;
+	private drumKit: DrumKit;
 
-	const trackContainer = document.createElement('div');
-	const stopSavingButton = document.createElement('button');
-	stopSavingButton.innerText = 'Stop saving';
-	const startSavingButton = document.createElement('button');
-	startSavingButton.innerText = 'Start saving';
+	constructor(drumKit: DrumKit) {
+		this.track = [];
+		this.drumKit = drumKit;
+	}
 
-	startSavingButton.addEventListener('click', () => {
-		track.sounds = [];
-		const startTime = new Date().getTime();
-		const keyPressHandler = keyPressHandlerFactory(track, startTime);
-		document.addEventListener('keypress', keyPressHandler);
-		stopSavingButton.addEventListener('click', () => {
-			document.removeEventListener('keypress', keyPressHandler);
+	public record(): void {
+		this.track = [];
+		this.startTime = new Date().getTime();
+		console.log(this.track);
+		document.addEventListener('keyup', this.recordSound.bind(this));
+	}
+
+	private recordSound(event: KeyboardEvent): void {
+		const currentTime = new Date().getTime();
+		const offsetTime = currentTime - this.startTime;
+		this.track.push({
+			key: event.key.toLocaleLowerCase(),
+			offsetTime: offsetTime,
 		});
-	});
+	}
+	public stopRecording(): void {
+		document.removeEventListener('keyup', this.recordSound.bind(this));
+	}
 
-	const playButton = document.createElement('button');
+	public initTrackGuid(): void {
+		const recordButton = document.createElement('button');
+		recordButton.innerText = 'Record';
+		recordButton.setAttribute('recording', 'false');
+		recordButton.addEventListener('click', () => {
+			if (recordButton.getAttribute('recording') === 'false') {
+				recordButton.setAttribute('recording', 'true');
+				recordButton.innerText = 'Stop';
+				this.record();
+			} else {
+				recordButton.setAttribute('recording', 'false');
+				recordButton.innerText = 'Record';
+				this.stopRecording();
+			}
+		});
+		document.body.appendChild(recordButton);
 
-	playButton.innerText = 'Play';
-	playButton.addEventListener('click', () => {
-		console.log(track.sounds);
-	});
-	const resetButton = document.createElement('button');
-	resetButton.innerText = 'Reset';
-
-	trackContainer.appendChild(startSavingButton);
-	trackContainer.appendChild(stopSavingButton);
-	trackContainer.appendChild(playButton);
-	return trackContainer;
+		const playButton = document.createElement('button');
+		playButton.innerText = 'Play';
+		playButton.addEventListener('click', () => {
+			this.track.forEach((sound) => {
+				this.drumKit.playSound(sound.key, sound.offsetTime / 1000);
+			});
+		});
+		document.body.appendChild(playButton);
+	}
 }
 
-const createBpm = () => {
-    const bmpSwitch = document.querySelector('#bpm-switch')!;
-    const bmpAudio = document.querySelector("#met")
-    bmpSwitch.innerHTML = "On";
-    bmpSwitch.addEventListener('click', () => {
-        if (bmpSwitch.innerHTML == "On") {
-            bmpSwitch.innerHTML = "Off";
+const soundUrls: sound[] = [
+	{ url: './sounds/clap.wav', key: 'q' },
+	{ url: './sounds/hihat.wav', key: 'w' },
+	{ url: './sounds/kick.wav', key: 'e' },
+	{ url: './sounds/openhat.wav', key: 'r' },
+	{ url: './sounds/ride.wav', key: 't' },
+	{ url: './sounds/snare.wav', key: 'y' },
+	{ url: './sounds/tink.wav', key: 'u' },
+	{ url: './sounds/tom.wav', key: 'i' },
+];
 
-        } else {
-            bmpSwitch.innerHTML = "On";
-        }
-    }
-
-}
-
-const init = () => {
-    createTracks(2);    
-}
-
-init();
+const drumKit = new DrumKit(soundUrls);
+const trackRecorder = new TrackRecorder(drumKit);
+trackRecorder.initTrackGuid();
+const trackRecorder2 = new TrackRecorder(drumKit);
+trackRecorder2.initTrackGuid();
