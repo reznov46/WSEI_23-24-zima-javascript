@@ -8,7 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-class DrumKit {
+class Player {
     constructor(soundsUrls) {
         this.audioContext = new AudioContext();
         this.sounds = {};
@@ -43,27 +43,21 @@ class DrumKit {
     playSound(key, offset = 0) {
         const soundKey = this.keyMap[key];
         if (soundKey) {
+            this.audioContext.resume();
             const source = this.audioContext.createBufferSource();
             source.buffer = this.sounds[soundKey];
             source.connect(this.audioContext.destination);
             source.start(this.audioContext.currentTime + offset);
         }
     }
+    stop() {
+        this.audioContext.suspend();
+    }
 }
-const soundUrls = [
-    { url: './sounds/clap.wav', key: 'q' },
-    { url: './sounds/hihat.wav', key: 'w' },
-    { url: './sounds/kick.wav', key: 'e' },
-    { url: './sounds/openhat.wav', key: 'r' },
-    { url: './sounds/ride.wav', key: 't' },
-    { url: './sounds/snare.wav', key: 'y' },
-    { url: './sounds/tink.wav', key: 'u' },
-    { url: './sounds/tom.wav', key: 'i' },
-];
 class TrackRecorder {
-    constructor(drumKit) {
+    constructor(soundUrl) {
         this.track = [];
-        this.drumKit = drumKit;
+        this.drumKit = new Player(soundUrl);
     }
     record() {
         this.track = [];
@@ -86,31 +80,67 @@ class TrackRecorder {
         const recordButton = document.createElement('button');
         recordButton.innerText = 'Record';
         recordButton.setAttribute('recording', 'false');
-        recordButton.addEventListener('click', () => {
-            if (recordButton.getAttribute('recording') === 'false') {
-                recordButton.setAttribute('recording', 'true');
-                recordButton.innerText = 'Stop';
-                this.record();
-            }
-            else {
-                recordButton.setAttribute('recording', 'false');
-                recordButton.innerText = 'Record';
-                this.stopRecording();
-            }
-        });
-        document.body.appendChild(recordButton);
+        recordButton.addEventListener('click', this.recordHandler.bind(this));
         const playButton = document.createElement('button');
         playButton.innerText = 'Play';
-        playButton.addEventListener('click', () => {
+        recordButton.setAttribute('playing', 'false');
+        playButton.addEventListener('click', this.playHandler.bind(this));
+        const resetButton = document.createElement('button');
+        resetButton.innerText = 'Reset';
+        resetButton.addEventListener('click', this.reset.bind(this));
+        document.body.appendChild(recordButton);
+        document.body.appendChild(playButton);
+    }
+    recordHandler({ target }) {
+        if (!(target instanceof HTMLButtonElement)) {
+            return;
+        }
+        if (target.getAttribute('recording') === 'false') {
+            target.setAttribute('recording', 'true');
+            target.innerText = 'Stop';
+            this.record();
+        }
+        else {
+            target.setAttribute('recording', 'false');
+            target.innerText = 'Record';
+            this.stopRecording();
+        }
+    }
+    playHandler({ target }) {
+        if (!(target instanceof HTMLButtonElement)) {
+            return;
+        }
+        console.log(target.getAttribute('playing'));
+        if (target.getAttribute('playing') === 'false') {
+            target.setAttribute('playing', 'true');
+            target.innerText = 'Stop';
             this.track.forEach((sound) => {
                 this.drumKit.playSound(sound.key, sound.offsetTime / 1000);
             });
-        });
-        document.body.appendChild(playButton);
+        }
+        else {
+            target.setAttribute('playing', 'false');
+            target.innerText = 'Play';
+            this.drumKit.stop();
+        }
+    }
+    reset() {
+        this.drumKit.stop();
+        this.track = [];
     }
 }
-const drumKit = new DrumKit(soundUrls);
-const trackRecorder = new TrackRecorder(drumKit);
+const soundUrls = [
+    { url: './sounds/clap.wav', key: 'q' },
+    { url: './sounds/hihat.wav', key: 'w' },
+    { url: './sounds/kick.wav', key: 'e' },
+    { url: './sounds/openhat.wav', key: 'r' },
+    { url: './sounds/ride.wav', key: 't' },
+    { url: './sounds/snare.wav', key: 'y' },
+    { url: './sounds/tink.wav', key: 'u' },
+    { url: './sounds/tom.wav', key: 'i' },
+];
+const drumKit = new Player(soundUrls);
+const trackRecorder = new TrackRecorder(soundUrls);
 trackRecorder.initTrackGuid();
-const trackRecorder2 = new TrackRecorder(drumKit);
+const trackRecorder2 = new TrackRecorder(soundUrls);
 trackRecorder2.initTrackGuid();
