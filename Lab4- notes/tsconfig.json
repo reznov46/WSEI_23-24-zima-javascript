@@ -1,6 +1,6 @@
 {
 	"compilerOptions": {
-		"lib": ["DOM", "ES2016"],
+		"lib": ["ESNext.Array", "DOM", "ES2016"],
 		"target": "ES2015", // Specify your target ECMAScript version
 		"module": "commonjs", // Specify module system (e.g., commonjs, esnext)
 		"strict": true, // Enable strict type-checking
@@ -16,7 +16,7 @@
 		}
 	},
 	"include": [
-		"scripts.ts", // Specify files to include in compilation
+		"scripts.ts" // Specify files to include in compilation
 	],
 	"exclude": [
 		"node_modules" // Specify files to exclude from compilation
