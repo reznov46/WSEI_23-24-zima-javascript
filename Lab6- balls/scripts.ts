@@ -1,4 +1,3 @@
-// Definicja interfejsu dla kuli
 interface Ball {
 	x: number;
 	y: number;
@@ -6,8 +5,6 @@ interface Ball {
 	speedX: number;
 	speedY: number;
 }
-
-// Inicjalizacja canvas
 const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
 
@@ -42,7 +39,6 @@ function updateBalls() {
 		ball.x += ball.speedX;
 		ball.y += ball.speedY;
 
-		// Odbijanie od krawędzi
 		if (ball.x - ball.radius < 0 || ball.x + ball.radius > canvas.width) {
 			ball.speedX = -ball.speedX;
 		}
@@ -95,7 +91,7 @@ document.getElementById('stopButton')?.addEventListener('click', () => {
 		animationId = null;
 	}
 });
-// Resetowanie gry po kliknięciu przycisku reset
+
 document.getElementById('resetButton')?.addEventListener('click', () => {
 	if (animationId) {
 		cancelAnimationFrame(animationId);
@@ -104,7 +100,7 @@ document.getElementById('resetButton')?.addEventListener('click', () => {
 	}
 });
 
-// Ustawienie obsługi zdarzenia dla ruchu myszki
+
 canvas.addEventListener('mousemove', (event) => {
 	const rect = canvas.getBoundingClientRect();
 	mouseX = event.clientX - rect.left;
@@ -116,19 +112,13 @@ canvas.addEventListener('click', (event) => {
 	const clickedX = event.clientX - rect.left;
 	const clickedY = event.clientY - rect.top;
 
-	// Sprawdzenie czy kliknięcie nastąpiło wewnątrz któregoś z okręgów
 	for (let i = 0; i < balls.length; i++) {
 		const ball = balls[i];
 		const distance = calculateDistance(ball.x, ball.y, clickedX, clickedY);
-		console.log(distance);
 
 		if (distance < ball.radius + 10) {
-			console.log('in');
-
-			// Usunięcie klikniętej kuli
 			balls.splice(i, 1);
 
-			// Dodanie dwóch nowych kul
 			balls.push({
 				x: Math.random() * canvas.width,
 				y: Math.random() * canvas.height,
@@ -145,7 +135,7 @@ canvas.addEventListener('click', (event) => {
 				speedY: (Math.random() - 0.5) * 5,
 			});
 
-			break; // Wyjście z pętli po kliknięciu jednej kuli
+			break;
 		}
 	}
 });
