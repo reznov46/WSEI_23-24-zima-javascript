@@ -1,0 +1,24 @@
+{
+	"compilerOptions": {
+		"lib": ["ESNext.Array", "DOM", "ES2016"],
+		"target": "ES2015", // Specify your target ECMAScript version
+		"module": "commonjs", // Specify module system (e.g., commonjs, esnext)
+		"strict": true, // Enable strict type-checking
+		"esModuleInterop": true, // Enable compatibility with CommonJS-style imports
+		"skipLibCheck": true, // Skip type checking of declaration files
+		"forceConsistentCasingInFileNames": true, // Ensure consistent casing in file names
+		"moduleResolution": "node", // Specify module resolution strategy
+		"jsx": "react", // Enable JSX support
+		"outDir": "./dist", // Specify output directory
+		"baseUrl": ".", // Base directory to resolve non-relative module names
+		"paths": {
+			"*": ["*"] // Define path mappings for module names
+		}
+	},
+	"include": [
+		"scripts.ts" // Specify files to include in compilation
+	],
+	"exclude": [
+		"node_modules" // Specify files to exclude from compilation
+	]
+}
